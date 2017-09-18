@@ -1,0 +1,364 @@
+package com.salesify;
+
+	import java.io.File;
+	import java.io.IOException;
+	import java.util.NoSuchElementException;
+	import java.util.concurrent.TimeUnit;
+	import org.openqa.selenium.By;
+	import org.openqa.selenium.WebDriver;
+	import org.openqa.selenium.WebElement;
+	import org.openqa.selenium.firefox.FirefoxDriver;
+	import jxl.Cell;
+	import jxl.CellView;
+	import jxl.Sheet;
+	import jxl.Workbook;
+	import jxl.read.biff.BiffException;
+	import jxl.write.*;
+	import jxl.write.biff.RowsExceededException;
+
+	public class MasterListVerification {
+
+		static WritableWorkbook workbook;
+		static WritableSheet sheetout;
+		static Sheet sheetIn;
+
+
+		public static void main(String[] args) {
+			// TODO Auto-generated method stub
+
+			// Open Input and Output files
+			try {
+
+				String xlsxFileToRead = args[0];
+				String xlsxFileToWrite = args[1];
+
+				workbook = Workbook.createWorkbook(new File(xlsxFileToWrite));
+				sheetout = workbook.createSheet("First Sheet", 0); 
+
+				File inputWorkbook = new File(xlsxFileToRead);
+				Workbook w = Workbook.getWorkbook(inputWorkbook);
+				sheetIn = w.getSheet(0);
+
+
+			} catch (IOException | BiffException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} 		
+
+
+			try {
+				processMasterListURL();
+			} catch (WriteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+			try {
+				workbook.write();
+
+
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				workbook.close();
+			} catch (WriteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+
+		}
+
+		public static void checkCompanyDetails(int row, String id, String Name, String Website, String URL, String Industry, 
+				String Type, String Headquarters, String Company_Size, String Founded ) throws RowsExceededException, WriteException {
+
+			WebDriver driver = new FirefoxDriver();
+			driver.manage().timeouts().implicitlyWait(1, TimeUnit.SECONDS);
+
+			String baseURL = "http://"  + URL;
+			System.out.println("URL ==  " + baseURL);
+			driver.get(baseURL);			
+			Label label;
+			label = new Label(0, row, id ); sheetout.addCell(label);
+			label = new Label(1, row, Name ); sheetout.addCell(label);
+			label = new Label(2, row, Website ); sheetout.addCell(label);
+			label = new Label(3, row, URL ); sheetout.addCell(label);
+			label = new Label(4, row, Industry ); sheetout.addCell(label);
+			label = new Label(5, row, Type ); sheetout.addCell(label);
+			label = new Label(6, row, Headquarters ); sheetout.addCell(label);
+			label = new Label(7, row, Company_Size ); sheetout.addCell(label);
+			label = new Label(8, row, Founded ); sheetout.addCell(label);
+
+			try{
+				WebElement dismiss_button= driver.findElement(By.xpath("//div[@class='global-alert']/p[@class='error']/button"));
+				if(dismiss_button != null)
+				{
+					label = new Label(9, row, "Not Found" );
+
+					sheetout.addCell(label);
+				}
+			}
+
+			catch (Exception e) {
+				//	e.printStackTrace();
+				label = new Label(9, row, "Found" ); 
+
+				sheetout.addCell(label);
+			}
+
+
+			try{
+				WebElement compName = driver.findElement(By.xpath("//span[@itemprop='name']"));						
+
+				System.out.println ("Companyname " + compName.getText());
+				if(compName.getText().equals(Name))
+				{					
+					label = new Label(10, row, "CommpName Matches"); 
+
+				}
+				else
+				{
+
+					label = new Label(10, row, "CompName Not Matching"); 
+
+				}
+
+				sheetout.addCell(label); 
+
+
+				label = new Label(11, row, compName.getText());
+
+
+				sheetout.addCell(label); 
+
+				WebElement compWebsite = driver.findElement(By.xpath("//ul/li/p/a[@rel='nofollow']"));
+
+				if(compWebsite.getText().equals("http://" + Website))
+				{
+
+					label = new Label(12, row, "CompWeb Matches"); 
+
+				}
+				else
+				{
+
+					label = new Label(12, row, "CompWeb Not Matching"); 
+
+				}
+				sheetout.addCell(label);
+
+
+				label = new Label(13, row, compWebsite.getText());
+
+				sheetout.addCell(label);
+
+				WebElement compIndustry = driver.findElement(By.xpath("//ul/li[2][@class='industry']/p[text()]"));		
+				//(//*/h4[1]/following-sibling::p[not(preceding-sibling::h4[2])]/text()[1])[1]
+
+				System.out.println ("compIndustry " + compIndustry.getText());
+				if(compIndustry.getText().equals(Industry))
+				{					
+					label = new Label(14, row, "CompInd Matches"); 
+
+				}
+				else
+				{
+
+					label = new Label(14, row, "CompInd Not Matching"); 
+
+				}
+
+				sheetout.addCell(label); 
+
+
+				label = new Label(15, row, compIndustry.getText());
+
+				sheetout.addCell(label); 
+
+
+				WebElement compType = driver.findElement(By.xpath("//ul/li[3][@class='type']/p[text()]"));						
+
+				System.out.println ("compType " + compType.getText());
+				if(compType.getText().equals(Type))
+				{					
+					label = new Label(16, row, "CompType Matches" ); 
+
+				}
+				else
+				{
+
+					label = new Label(16, row, "CompType Not Matching"); 
+
+				}
+
+				sheetout.addCell(label); 
+
+				label = new Label(17, row, compType.getText());
+
+				sheetout.addCell(label); 
+
+
+				WebElement compHeadquarters = driver.findElement(By.xpath("//div/ul/li[4][@class='vcard hq']/p"));
+				// //*/h4[1]/following-sibling::p[not(preceding-sibling::h4[2])]/text()[3]
+
+				System.out.println ("compHeadquarters " + compHeadquarters.getText());
+				if(compHeadquarters.getText().equals(Headquarters))
+				{					
+					label = new Label(18, row, "CompHQ Matches"); 
+
+				}
+				else
+				{
+
+					label = new Label(18, row, "CompHQ Not Matching"); 
+
+				}
+
+				sheetout.addCell(label); 
+
+
+				label = new Label(19, row, compHeadquarters.getText());
+
+				sheetout.addCell(label); 
+
+				WebElement compSize = driver.findElement(By.xpath("//ul/li[5][@class='company-size']/p[text()]"));						
+
+				System.out.println ("compSize " + compSize.getText());
+				if(compSize.getText().equals(Company_Size))
+				{					
+					label = new Label(20, row, "compSize Matches"); 
+
+				}
+				else
+				{
+
+					label = new Label(20, row, "CompSize Not Matching"); 
+
+				}
+
+				sheetout.addCell(label); 
+
+
+				label = new Label(21, row, compSize.getText());
+
+				sheetout.addCell(label); 
+
+				WebElement compFounded = driver.findElement(By.xpath("//ul/li[6][@class='founded']/p[text()]"));						
+
+				System.out.println ("compFounded " + compFounded.getText());
+				if(compFounded.getText().equals(Founded))
+				{					
+					label = new Label(22, row, "CompFoundMatches"); 
+
+				}
+				else
+				{
+
+					label = new Label(22, row, "CompFound Not Matching"); 
+
+
+				}
+
+				sheetout.addCell(label); 
+
+
+				label = new Label(23, row, compFounded.getText());
+
+				sheetout.addCell(label); 
+
+			}
+			catch(NoSuchElementException e){
+
+				/*System.out.println("Not same company name" + baseURL + "  Status Code==" +
+					 elementPresent);*/
+			}
+			catch (Exception e) {
+				// e.printStackTrace();
+			}
+			driver.quit(); 
+		}	
+
+
+
+		public static void processMasterListURL() throws RowsExceededException, WriteException {  
+
+
+			Label label;
+			// Input file has 9 columns
+			String[] masterList = new String[9];
+
+			// Write 16 column headers into output file
+			label = new Label(0, 0, "masterCompanyId" ); sheetout.addCell(label);
+			label = new Label(1, 0, "masterCompanyName" ); sheetout.addCell(label);
+			label = new Label(2, 0, "companyWebsite" ); sheetout.addCell(label);
+			label = new Label(3, 0, "linkedInUrl" ); sheetout.addCell(label);
+			label = new Label(4, 0, "Industry" ); sheetout.addCell(label);
+			label = new Label(5, 0, "Company_type" ); sheetout.addCell(label);
+			label = new Label(6, 0, "Company_Headquarters" ); sheetout.addCell(label);
+			label = new Label(7, 0, "Company_size" ); sheetout.addCell(label);
+			label = new Label(8, 0, "Company_Founded" ); sheetout.addCell(label);
+			label = new Label(9, 0, "LI URL Status" ); sheetout.addCell(label);
+			label = new Label(10, 0, "Company Name status" ); sheetout.addCell(label);
+			label = new Label(11, 0, "Company Name status value" ); sheetout.addCell(label);
+			label = new Label(12, 0, "Company Website status" ); sheetout.addCell(label);
+			label = new Label(13, 0, "Company Website status value" ); sheetout.addCell(label);
+			label = new Label(14, 0, "Industry status" ); sheetout.addCell(label);
+			label = new Label(15, 0, "Industry status value" ); sheetout.addCell(label);
+			label = new Label(16, 0, "Company_type Status" ); sheetout.addCell(label);
+			label = new Label(17, 0, "Company_type Status value" ); sheetout.addCell(label);
+			label = new Label(18, 0, "Company Headquarters status" ); sheetout.addCell(label);
+			label = new Label(19, 0, "Company Headquarters status value" ); sheetout.addCell(label);
+			label = new Label(20, 0, "Company Size status" ); sheetout.addCell(label);
+			label = new Label(21, 0, "Company Size status value" ); sheetout.addCell(label);
+			label = new Label(22, 0, "Company Founded status" ); sheetout.addCell(label);
+			label = new Label(23, 0, "Company Founded status value" ); sheetout.addCell(label);
+
+			// Auto fit columns
+			for(int x=0;x<23;x++)
+			{
+				CellView cell=sheetout.getColumnView(x);
+				cell.setAutosize(true);
+				sheetout.setColumnView(x, cell);
+			}
+
+			// Read row by row
+			for(int i=1; i < sheetIn.getRows(); i++)
+			{
+				// Process each column in row i
+				for(int j=0; j < sheetIn.getColumns(); j++)
+				{
+					Cell cell = sheetIn.getCell(j,i);
+					// Save each cell into masterList array
+					masterList[j] =	cell.getContents();
+				}
+				// Now process masterList
+				// Check if LI URL not empty
+				if (masterList[3] != "") {								
+					checkCompanyDetails(i, masterList[0],masterList[1],masterList[2], masterList[3],masterList[4],masterList[5],masterList[6],masterList[7],masterList[8]);
+				}
+				else
+				{
+					// If LI URL is not specified, write other columns into output
+					try {
+						label = new Label(0, i, masterList[0] ); sheetout.addCell(label);
+						label = new Label(1, i, masterList[1] ); sheetout.addCell(label);
+						label = new Label(2, i, masterList[2] ); sheetout.addCell(label);	
+						label = new Label(3, i, masterList[3] ); sheetout.addCell(label);
+						label = new Label(4, i, masterList[4] ); sheetout.addCell(label);													
+						label = new Label(5, i, masterList[5] ); sheetout.addCell(label);
+						label = new Label(6, i, masterList[6] ); sheetout.addCell(label);
+						label = new Label(7, i, masterList[7] ); sheetout.addCell(label);
+						label = new Label(8, i, masterList[8] ); sheetout.addCell(label);               
+					}
+					catch (ArrayIndexOutOfBoundsException e)
+					{
+						//
+					}
+				}			 	    
+			}
+		}
+	}

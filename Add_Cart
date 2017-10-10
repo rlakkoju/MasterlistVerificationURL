@@ -1,0 +1,70 @@
+/*Real time scenario to check item added to cart or not.
+Scenario-
+
+1. Browse and open http://www.infibeam.com as a input data from excel sheet...
+2. Navigate to all stores then mobiles and select mobiles type...
+3. Then enter blackberry in search box and click on search...
+4. select price range 10000 to 18000...
+5. select displayed mobile, and write model name and price in a Textfile.... 
+and check the product Instock or not,if it is Instock then click on Buy Now...(write Reusable script)
+6. check it is added in to the cart or not...
+7. Close the Browser.
+*/
+package com.addCart 
+import java.io.BufferedWriter;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.interactions.Actions;
+
+public class Siva {
+public static void main(String[] args) throws InvalidFormatException, IOException{
+String url = getData(0,0);
+WebDriver driver = new FirefoxDriver();
+driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+driver.get(url);
+WebElement mob = driver.findElement(By.xpath("//span[text()='Mobiles & Tablets']"));
+Actions act = new Actions(driver);
+act.moveToElement(mob).perform();
+WebElement type = driver.findElement(By.linkText("Mobile Type"));
+act.moveToElement(type).click().perform();
+driver.findElement(By.id("suggest")).sendKeys("blackberry");
+driver.findElement(By.xpath("//form[@id='srchForm']//input[@value='Search']")).click();
+driver.findElement(By.xpath("//a[@title='10000-18000']")).click();
+List<WebElement> model = driver.findElements(By.xpath("//span[@class='title']"));
+List<WebElement> price = driver.findElements(By.xpath("//div[@class='price']"));
+FileWriter fileWriter = new FileWriter("out.txt");
+BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+bufferedWriter.write("model "+"\t\t\t\t\t"+"price"+"\n");
+
+for(int i=0; i<model.size(); i++){
+bufferedWriter.write(model.get(i).getText()+"\t"+price.get(i).getText()+"\n");
+}
+bufferedWriter.close();
+
+model.get(0).click();
+driver.findElement(By.xpath("//input[@value='Buy Now']")).click();
+String quantity = driver.findElement(By.xpath("//div[@class='quantity']/div")).getText();
+int n = Integer.parseInt(quantity);
+if(n==1){
+System.out.println("phone has been added to cart");
+} 
+driver.close();
+}
+public static String getData(int row, int cell) throws InvalidFormatException, IOException{
+FileInputStream fis = new FileInputStream("./InputData.xlsx");
+Workbook wb = WorkbookFactory.create(fis);
+String value = wb.getSheet("Sheet3").getRow(row).getCell(cell).getStringCellValue();
+return value;
+}
+}

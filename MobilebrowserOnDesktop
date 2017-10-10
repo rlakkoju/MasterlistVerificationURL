@@ -1,0 +1,30 @@
+package com.mobileBrowser.desktop;
+
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+import org.openqa.selenium.By;
+import org.openqa.selenium.Dimension;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxProfile;
+
+public class MobileBrowser {
+    public static void main(String[] args) throws InterruptedException, IOException {
+        System.out.println("program start");
+        FirefoxProfile ffprofile = new FirefoxProfile();
+        ffprofile.setPreference("general.useragent.override", "iPhone"); //this will change the user agent which will open mobile browser 
+        WebDriver driver = new FirefoxDriver(ffprofile); 
+        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+        driver.manage().window().setSize(new Dimension(400,800)); //just to change the window size so that it will look like mobile ;)
+        driver.get("http://www.fabfurnish.com/");
+        
+        //lets try sign in
+        driver.findElement(By.id("nav-menu")).click(); //click on right corner bar icon
+        driver.findElement(By.xpath("//a[@href='/customer/login']/img")).click(); //click on login
+        driver.findElement(By.id("m_log_button")).click();
+        driver.findElement(By.id("LoginForm_email")).sendKeys("yourEmailId@gmail.com");
+        driver.findElement(By.id("LoginForm_password")).sendKeys("yourPassword");
+        driver.findElement(By.xpath("//input[@value='Login']")).click();
+        System.out.println("End");
+    }
+}
